@@ -214,16 +214,21 @@ EOF
 else
     for file in $html_files; do
         filename=$(basename "$file")
+        # URL encode the filename for use in href attributes
+        # This handles special characters like spaces, %, etc.
+        encoded_filename=$(printf '%s' "$filename" | jq -sRr @uri)
         # Convert filename to readable title (remove .html, replace hyphens/underscores with spaces, capitalize)
-        title=$(echo "$filename" | sed 's/.html$//' | sed 's/[-_]/ /g' | awk '{for(i=1;i<=NF;i++)sub(/./,toupper(substr($i,1,1)),$i)}1')
+        # Also decode any URL-encoded characters for the display title
+        decoded_filename=$(printf '%s' "$filename" | sed 's/%20/ /g' | sed 's/%/ /g')
+        title=$(echo "$decoded_filename" | sed 's/.html$//' | sed 's/[-_]/ /g' | awk '{for(i=1;i<=NF;i++)sub(/./,toupper(substr($i,1,1)),$i)}1')
 
         cat >> index.html << EOF
             <div class="chart-card">
-                <a href="$filename">$title</a>
+                <a href="$encoded_filename">$title</a>
                 <div class="chart-name">$filename</div>
                 <div class="button-group">
-                    <a href="$filename" class="btn btn-primary">View Chart</a>
-                    <button class="btn btn-secondary" onclick="copyEmbedCode('$filename')">Copy Embed Code</button>
+                    <a href="$encoded_filename" class="btn btn-primary">View Chart</a>
+                    <button class="btn btn-secondary" onclick="copyEmbedCode('$encoded_filename')">Copy Embed Code</button>
                 </div>
             </div>
 EOF
