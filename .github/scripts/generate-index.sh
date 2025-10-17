@@ -129,11 +129,12 @@ cat > index.html << 'EOF'
 
         .btn-primary {
             background: #119dff;
-            color: white;
+            color: white !important;
         }
 
         .btn-primary:hover {
             background: #0d7ec9;
+            color: white !important;
         }
 
         .btn-secondary {

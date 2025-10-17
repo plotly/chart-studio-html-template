@@ -31,6 +31,8 @@ Perfect for sharing interactive Plotly visualizations with your team or embeddin
 
 This is the most important step - your charts won't be published without it!
 
+**Note:** If you're using a free GitHub account, your repository must be **public** to use GitHub Pages. If your repo is private, go to **Settings** → **General** → scroll to the bottom → click **Change visibility** → select **Make public**.
+
 1. In your new repository, click **Settings** at the top
 2. Look in the left sidebar and click **Pages**
 3. Under "Build and deployment", find the **Source** dropdown
