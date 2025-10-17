@@ -25,10 +25,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Inject CSS to hide Chart Studio links
+      - name: Disable Chart Studio showLink
         run: |
-          chmod +x .github/scripts/inject-css.sh
-          .github/scripts/inject-css.sh
+          chmod +x .github/scripts/disable-showlink.sh
+          .github/scripts/disable-showlink.sh
 
       - name: Generate index page
         run: |
