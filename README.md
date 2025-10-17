@@ -15,8 +15,9 @@ Perfect for sharing interactive Plotly visualizations with your team or embeddin
 ### Step 1: Create Your Own Copy
 
 1. At the top of this page on GitHub, click the green **"Use this template"** button
-2. Give your project a name (like "my-plotly-charts")
-3. Click **"Create repository"**
+2. Select **"Create a new repository"**
+3. Give your project a name (like "my-plotly-charts")
+4. Click **"Create repository"**
 
 ### Step 2: Export Your Charts from Chart Studio
 

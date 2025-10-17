@@ -25,6 +25,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Inject CSS to hide Chart Studio links
+        run: |
+          chmod +x .github/scripts/inject-css.sh
+          .github/scripts/inject-css.sh
+
       - name: Generate index page
         run: |
           chmod +x .github/scripts/generate-index.sh

@@ -109,23 +109,43 @@ cat > index.html << 'EOF'
             font-size: 0.9rem;
         }
 
-        .copy-button {
+        .button-group {
             margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
             padding: 0.5rem 1rem;
-            background: #119dff;
-            color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.9rem;
             transition: background 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
 
-        .copy-button:hover {
+        .btn-primary {
+            background: #119dff;
+            color: white;
+        }
+
+        .btn-primary:hover {
             background: #0d7ec9;
         }
 
-        .copy-button.copied {
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn.copied {
             background: #27ae60;
         }
 
@@ -200,7 +220,10 @@ else
             <div class="chart-card">
                 <a href="$filename">$title</a>
                 <div class="chart-name">$filename</div>
-                <button class="copy-button" onclick="copyEmbedCode('$filename')">Copy Embed Code</button>
+                <div class="button-group">
+                    <a href="$filename" class="btn btn-primary">View Chart</a>
+                    <button class="btn btn-secondary" onclick="copyEmbedCode('$filename')">Copy Embed Code</button>
+                </div>
             </div>
 EOF
     done
