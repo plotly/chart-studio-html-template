@@ -2,6 +2,15 @@
 
 Host your Plotly Chart Studio visualizations online for free using GitHub Pages. Export your charts from Chart Studio as HTML files and publish them with a simple web link.
 
+<div>
+    <a href="https://www.loom.com/share/0e95c5e3bb334e288c09f80719d0027c">
+      <p>Migrate Chart Studio Charts to Github Pages - Watch Video</p>
+    </a>
+    <a href="https://www.loom.com/share/0e95c5e3bb334e288c09f80719d0027c">
+      <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/0e95c5e3bb334e288c09f80719d0027c-e8e7dcd1079f042c-full-play.gif">
+    </a>
+  </div>
+
 ## What This Does
 
 Upload your Chart Studio HTML exports, and they'll be automatically published online:
