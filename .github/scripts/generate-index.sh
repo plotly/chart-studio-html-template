@@ -109,6 +109,26 @@ cat > index.html << 'EOF'
             font-size: 0.9rem;
         }
 
+        .copy-button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: #119dff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .copy-button:hover {
+            background: #0d7ec9;
+        }
+
+        .copy-button.copied {
+            background: #27ae60;
+        }
+
         .empty-state {
             background: white;
             border-radius: 8px;
@@ -126,13 +146,34 @@ cat > index.html << 'EOF'
             color: #95a5a6;
         }
     </style>
+    <script>
+        function copyEmbedCode(filename) {
+            // Get the base URL dynamically from the current page
+            const baseUrl = window.location.href.replace(/\/[^\/]*$/, '');
+            const url = baseUrl + '/' + filename;
+            const embedCode = '<iframe src="' + url + '" width="100%" height="600" frameborder="0"></iframe>';
+
+            navigator.clipboard.writeText(embedCode).then(function() {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+
+                setTimeout(function() {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(function(err) {
+                alert('Failed to copy: ' + err);
+            });
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <header>
             <h1><span class="plotly-logo">Plotly</span> Chart Gallery</h1>
-            <p class="subtitle">Browse all interactive visualizations from Chart Studio</p>
-            <p class="powered-by">Powered by <a href="https://plotly.com/chart-studio/" target="_blank">Plotly Chart Studio</a></p>
+            <p class="subtitle">Charts previously hosted on Plotly Chart Studio</p>
         </header>
 
         <div class="chart-grid">
@@ -159,6 +200,7 @@ else
             <div class="chart-card">
                 <a href="$filename">$title</a>
                 <div class="chart-name">$filename</div>
+                <button class="copy-button" onclick="copyEmbedCode('$filename')">Copy Embed Code</button>
             </div>
 EOF
     done
