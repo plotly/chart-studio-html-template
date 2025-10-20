@@ -124,3 +124,64 @@ Just repeat Step 4! Every time you export a new chart from Chart Studio and add 
 **Need to remove a chart?**
 - Go to the `charts` folder, click on the file, and click the trash icon
 - Commit the change, and it will be removed from your site within a minute
+
+## Bulk Export All Your Charts (Advanced)
+
+If you have many charts in Chart Studio and want to download them all at once, you can use the `poll_all_charts.py` script instead of manually exporting each one.
+
+### What This Script Does
+
+The script automatically:
+1. Connects to your Chart Studio account using your API credentials
+2. Fetches all charts that you own
+3. Downloads the chart data as JSON
+4. Generates standalone HTML files using Plotly.js 1.58.5
+5. Saves them to the `charts/` folder, ready to be published
+
+This is much faster than manually exporting charts one-by-one from the Chart Studio interface, especially if you have dozens or hundreds of visualizations.
+
+### How to Use It
+
+**Step 1: Install UV**
+
+UV is a fast Python package manager. Install it by running:
+
+```bash
+# On macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# On Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+**Step 2: Get Your Chart Studio API Credentials**
+
+1. Log in to [Chart Studio](https://chart-studio.plotly.com/)
+2. Go to Settings → API Keys
+3. Copy your API key
+
+**Step 3: Update the Script**
+
+Open `poll_all_charts.py` and update these lines with your credentials:
+
+```python
+username = 'your-username'  # Replace with your Chart Studio username
+api_key = 'your-api-key'    # Replace with your API key from Step 2
+```
+
+**Step 4: Run the Script**
+
+In your terminal, navigate to the repository folder and run:
+
+```bash
+./poll_all_charts.py
+```
+
+Or:
+```bash
+uv run poll_all_charts.py
+```
+
+The script will download all your charts and save them as HTML files in the `charts/` folder. Then just commit and push the changes to publish them on GitHub Pages!
+
+**Note:** This script uses Plotly.js version 1.58.5 to ensure compatibility and consistent rendering across all your charts.
