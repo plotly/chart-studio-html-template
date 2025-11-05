@@ -34,7 +34,7 @@ jobs:
         run: |
           if [ -d "json" ] && [ "$(ls -A json/*.json 2>/dev/null)" ]; then
             chmod +x convert_json_to_html.py
-            ~/.cargo/bin/uv run convert_json_to_html.py
+            uv run convert_json_to_html.py
           else
             echo "No JSON files found in json/ directory, skipping conversion"
           fi
