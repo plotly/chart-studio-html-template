@@ -25,6 +25,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install uv (Python package manager)
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Convert JSON files to HTML
+        run: |
+          if [ -d "json" ] && [ "$(ls -A json/*.json 2>/dev/null)" ]; then
+            chmod +x convert_json_to_html.py
+            ~/.cargo/bin/uv run convert_json_to_html.py
+          else
+            echo "No JSON files found in json/ directory, skipping conversion"
+          fi
+
       - name: Disable Chart Studio showLink
         run: |
           chmod +x .github/scripts/disable-showlink.sh

@@ -13,9 +13,10 @@ Host your Plotly Chart Studio visualizations online for free using GitHub Pages.
 
 ## What This Does
 
-Upload your Chart Studio HTML exports, and they'll be automatically published online:
+Upload your Chart Studio HTML exports or JSON data files, and they'll be automatically published online:
 - An **index page** listing all your Plotly charts is created at `https://yourusername.github.io/your-project/`
 - Each chart gets its own web address: `https://yourusername.github.io/your-project/my-chart.html`
+- **NEW:** Support for JSON exports - just place Chart Studio JSON files in the `json/` directory and they'll be automatically converted to HTML
 
 Perfect for sharing interactive Plotly visualizations with your team or embedding in presentations!
 
@@ -64,6 +65,14 @@ You can add files directly on GitHub (easiest) or use GitHub Desktop:
 3. Copy your Chart Studio `.html` files into the `charts` folder
 4. In GitHub Desktop, write a description and click **Commit to main**
 5. Click **Push origin** to upload
+
+**Option C: Upload JSON Files (Alternative)**
+If you have JSON exports from Chart Studio instead of HTML files:
+1. Click on the `json` folder (or create it if it doesn't exist)
+2. Click **Add file** → **Upload files**
+3. Drag and drop your Chart Studio JSON files (e.g., `chart_data.json` files)
+4. Click **Commit changes** at the bottom
+5. The GitHub Action will automatically convert these to HTML files in the `charts` folder
 
 ### Step 5: Wait for Publishing
 
@@ -185,3 +194,60 @@ uv run poll_all_charts.py
 The script will download all your charts and save them as HTML files in the `charts/` folder. Then just commit and push the changes to publish them on GitHub Pages!
 
 **Note:** This script uses Plotly.js version 1.58.5 to ensure compatibility and consistent rendering across all your charts.
+
+## Working with JSON Exports
+
+If you have Chart Studio JSON exports (such as `chart_data.json` files from bulk exports), this repository can automatically convert them to HTML files.
+
+### Why Use JSON Files?
+
+- Bulk exports from Chart Studio often come as JSON files
+- JSON files are more portable and easier to version control
+- You can modify chart data programmatically before converting to HTML
+- Smaller file sizes compared to full HTML files
+
+### How to Use JSON Files
+
+**Option 1: Manual Conversion (Local)**
+
+1. Place your JSON files in the `json/` directory
+2. Run the conversion script locally:
+   ```bash
+   ./convert_json_to_html.py
+   ```
+3. The script will create HTML files in the `charts/` directory
+
+**Option 2: Automatic Conversion (GitHub)**
+
+1. Upload your JSON files to the `json/` folder in your repository
+2. Commit and push the changes
+3. GitHub Actions will automatically:
+   - Detect the JSON files
+   - Convert them to HTML using the same Plotly.js version (1.58.5)
+   - Include them in your published site
+
+### JSON File Format
+
+The JSON files should match the Chart Studio export format:
+
+```json
+{
+  "data": [
+    {
+      "type": "scatter",
+      "x": [1, 2, 3],
+      "y": [2, 4, 6],
+      "mode": "lines+markers"
+    }
+  ],
+  "layout": {
+    "title": {
+      "text": "My Chart"
+    },
+    "xaxis": {"title": {"text": "X Axis"}},
+    "yaxis": {"title": {"text": "Y Axis"}}
+  }
+}
+```
+
+The conversion script reads the `data` and `layout` fields and generates standalone HTML files with embedded Plotly.js.
