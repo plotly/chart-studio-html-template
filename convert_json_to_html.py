@@ -38,7 +38,7 @@ def convert_json_to_html(json_path, output_path):
     return output_path
 
 def main():
-    # Convert all JSON files in the json/ directory
+    # Convert all JSON files in the json/ directory (including subdirectories)
     json_dir = "json"
     charts_dir = "charts"
 
@@ -48,24 +48,37 @@ def main():
 
     os.makedirs(charts_dir, exist_ok=True)
 
-    json_files = [f for f in os.listdir(json_dir) if f.endswith('.json')]
+    # Walk through all directories and files
+    converted_count = 0
+    failed_count = 0
 
-    if not json_files:
+    for root, dirs, files in os.walk(json_dir):
+        for filename in files:
+            if filename.endswith('.json'):
+                json_path = os.path.join(root, filename)
+
+                # Calculate relative path from json_dir
+                rel_path = os.path.relpath(json_path, json_dir)
+
+                # Create corresponding output path in charts_dir
+                html_rel_path = rel_path.replace('.json', '.html')
+                html_path = os.path.join(charts_dir, html_rel_path)
+
+                # Create subdirectories if needed
+                os.makedirs(os.path.dirname(html_path), exist_ok=True)
+
+                try:
+                    convert_json_to_html(json_path, html_path)
+                    print(f"✅ Converted {rel_path} → {html_rel_path}")
+                    converted_count += 1
+                except Exception as e:
+                    print(f"❌ Failed to convert {rel_path}: {e}")
+                    failed_count += 1
+
+    if converted_count == 0 and failed_count == 0:
         print(f"No JSON files found in '{json_dir}' directory")
-        return
-
-    print(f"Found {len(json_files)} JSON file(s) to convert")
-
-    for json_file in json_files:
-        json_path = os.path.join(json_dir, json_file)
-        html_filename = json_file.replace('.json', '.html')
-        html_path = os.path.join(charts_dir, html_filename)
-
-        try:
-            convert_json_to_html(json_path, html_path)
-            print(f"✅ Converted {json_file} → {html_filename}")
-        except Exception as e:
-            print(f"❌ Failed to convert {json_file}: {e}")
+    else:
+        print(f"\n✨ Converted {converted_count} file(s), {failed_count} failed")
 
 if __name__ == "__main__":
     main()
