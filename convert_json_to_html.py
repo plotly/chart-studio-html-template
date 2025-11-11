@@ -8,6 +8,7 @@
 import json
 import os
 import sys
+import re
 
 def convert_json_to_html(json_path, output_path):
     """Convert a Chart Studio JSON export to standalone HTML"""
@@ -37,6 +38,18 @@ def convert_json_to_html(json_path, output_path):
 
     return output_path
 
+def sanitize_filename(title):
+    """Convert a title to a safe filename"""
+    # Remove any characters that aren't alphanumeric, spaces, hyphens, or underscores
+    safe_name = re.sub(r'[^\w\s-]', '', title)
+    # Replace spaces with hyphens
+    safe_name = re.sub(r'\s+', '-', safe_name)
+    # Remove multiple consecutive hyphens
+    safe_name = re.sub(r'-+', '-', safe_name)
+    # Strip leading/trailing hyphens
+    safe_name = safe_name.strip('-')
+    return safe_name if safe_name else 'chart'
+
 def main():
     # Convert all JSON files in the json/ directory (including subdirectories)
     json_dir = "json"
@@ -60,8 +73,36 @@ def main():
                 # Calculate relative path from json_dir
                 rel_path = os.path.relpath(json_path, json_dir)
 
-                # Create corresponding output path in charts_dir
-                html_rel_path = rel_path.replace('.json', '.html')
+                # Try to extract title from the JSON to use as filename
+                try:
+                    with open(json_path, 'r') as f:
+                        chart_data = json.load(f)
+
+                    # Check if layout.title exists
+                    layout = chart_data.get('layout', {})
+                    title = None
+
+                    # Handle both string titles and object titles
+                    if 'title' in layout:
+                        if isinstance(layout['title'], str):
+                            title = layout['title']
+                        elif isinstance(layout['title'], dict) and 'text' in layout['title']:
+                            title = layout['title']['text']
+
+                    if title:
+                        # Use sanitized title as filename
+                        html_filename = sanitize_filename(title) + '.html'
+                        # Preserve the subdirectory structure
+                        rel_dir = os.path.dirname(rel_path)
+                        html_rel_path = os.path.join(rel_dir, html_filename) if rel_dir else html_filename
+                    else:
+                        # Fall back to original filename
+                        html_rel_path = rel_path.replace('.json', '.html')
+
+                except Exception:
+                    # If we can't read the JSON, fall back to original filename
+                    html_rel_path = rel_path.replace('.json', '.html')
+
                 html_path = os.path.join(charts_dir, html_rel_path)
 
                 # Create subdirectories if needed
