@@ -201,7 +201,7 @@ cat > index.html << 'EOF'
 EOF
 
 # Find all HTML files except index.html and add them to the page
-html_files=$(find . -maxdepth 1 -name "*.html" ! -name "index.html" | sort)
+html_files=$(find . -name "*.html" ! -name "index.html" | sort)
 
 if [ -z "$html_files" ]; then
     cat >> index.html << 'EOF'
@@ -213,10 +213,12 @@ if [ -z "$html_files" ]; then
 EOF
 else
     for file in $html_files; do
+        # Remove leading ./ from path
+        relative_path="${file#./}"
         filename=$(basename "$file")
-        # URL encode the filename for use in href attributes
+        # URL encode the path for use in href attributes
         # This handles special characters like spaces, %, etc.
-        encoded_filename=$(printf '%s' "$filename" | jq -sRr @uri)
+        encoded_path=$(printf '%s' "$relative_path" | jq -sRr @uri)
         # Convert filename to readable title (remove .html, replace hyphens/underscores with spaces, capitalize)
         # Also decode any URL-encoded characters for the display title
         decoded_filename=$(printf '%s' "$filename" | sed 's/%20/ /g' | sed 's/%/ /g')
@@ -224,11 +226,11 @@ else
 
         cat >> index.html << EOF
             <div class="chart-card">
-                <a href="$encoded_filename">$title</a>
-                <div class="chart-name">$filename</div>
+                <a href="$encoded_path">$title</a>
+                <div class="chart-name">$relative_path</div>
                 <div class="button-group">
-                    <a href="$encoded_filename" class="btn btn-primary">View Chart</a>
-                    <button class="btn btn-secondary" onclick="copyEmbedCode('$encoded_filename')">Copy Embed Code</button>
+                    <a href="$encoded_path" class="btn btn-primary">View Chart</a>
+                    <button class="btn btn-secondary" onclick="copyEmbedCode('$encoded_path')">Copy Embed Code</button>
                 </div>
             </div>
 EOF

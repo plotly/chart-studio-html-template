@@ -4,12 +4,8 @@
 
 cd charts
 
-for file in *.html; do
-    # Skip index.html
-    if [ "$file" = "index.html" ]; then
-        continue
-    fi
-
+# Find all HTML files recursively, excluding index.html
+find . -name "*.html" ! -name "index.html" | while read -r file; do
     # Check if file exists and is not empty
     if [ ! -f "$file" ] || [ ! -s "$file" ]; then
         continue
