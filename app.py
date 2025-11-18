@@ -207,7 +207,8 @@ app.index_string = '''
             html, body {
                 height: 100%;
                 width: 100%;
-                overflow: hidden;
+                margin: 0;
+                padding: 0;
             }
 
             body {
@@ -217,9 +218,9 @@ app.index_string = '''
                 background: #f5f5f5;
             }
 
-            #react-entry-point, #react-entry-point > div {
-                height: 100%;
-                width: 100%;
+            /* Only hide overflow for chart pages */
+            #plotly-chart-container {
+                overflow: hidden;
             }
 
             .container {
