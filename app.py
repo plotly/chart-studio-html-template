@@ -7,10 +7,13 @@ import json
 import os
 from pathlib import Path
 from dash import Dash, html, dcc, Input, Output, callback
-import plotly.graph_objects as go
 
-# Initialize Dash app
-app = Dash(__name__, suppress_callback_exceptions=True)
+# Initialize Dash app with Plotly.js 1.58.5 for Chart Studio compatibility
+app = Dash(
+    __name__,
+    suppress_callback_exceptions=True,
+    external_scripts=['https://cdn.plot.ly/plotly-1.58.5.min.js']
+)
 server = app.server
 
 # Configure for deployment
@@ -41,7 +44,7 @@ def load_charts_from_json():
             else:
                 chart_title = json_file.stem.replace('-', ' ').title()
 
-            # Store chart info
+            # Store chart info with raw data (Plotly.js 1.58.5 handles it)
             charts.append({
                 'id': json_file.stem,
                 'title': chart_title,
@@ -100,7 +103,7 @@ def create_chart_card(chart):
     ], className="chart-card")
 
 def create_chart_page(chart_id):
-    """Create a page displaying a single chart"""
+    """Create a page displaying a single chart using Plotly.js 1.58.5"""
     chart = next((c for c in CHARTS if c['id'] == chart_id), None)
 
     if not chart:
@@ -109,22 +112,16 @@ def create_chart_page(chart_id):
             html.A("Back to Gallery", href="/")
         ])
 
-    # Create Plotly figure
-    fig = go.Figure(data=chart['data'], layout=chart['layout'])
-
-    # Make it responsive
-    fig.update_layout(
-        autosize=True,
-        margin=dict(l=0, r=0, t=40, b=0)
-    )
+    # Embed chart data as a data attribute for clientside rendering
+    chart_data_json = json.dumps({'data': chart['data'], 'layout': chart['layout']})
 
     return html.Div([
-        dcc.Graph(
-            figure=fig,
-            style={'height': '100vh', 'width': '100%'},
-            config={'responsive': True}
+        html.Div(
+            id='plotly-chart-container',
+            **{'data-chart': chart_data_json},
+            style={'height': '100%', 'width': '100%'}
         )
-    ], style={'margin': 0, 'padding': 0})
+    ], style={'height': '100vh', 'width': '100vw', 'margin': 0, 'padding': 0})
 
 @callback(
     Output('page-content', 'children'),
@@ -143,6 +140,54 @@ def display_page(pathname):
             html.A("Back to Gallery", href="/")
         ])
 
+# Clientside callback to render charts with Plotly.js 1.58.5
+app.clientside_callback(
+    """
+    function(id) {
+        var container = document.getElementById('plotly-chart-container');
+        if (!container) {
+            return window.dash_clientside.no_update;
+        }
+
+        var chartDataStr = container.getAttribute('data-chart');
+        if (!chartDataStr) {
+            return window.dash_clientside.no_update;
+        }
+
+        function renderChart() {
+            if (typeof Plotly !== 'undefined') {
+                var chartData = JSON.parse(chartDataStr);
+                var layout = chartData.layout || {};
+
+                // Force full viewport sizing
+                layout.autosize = true;
+                layout.width = undefined;
+                layout.height = undefined;
+                layout.margin = {l: 40, r: 40, t: 40, b: 40};
+
+                Plotly.newPlot('plotly-chart-container', chartData.data, layout, {
+                    responsive: true,
+                    displayModeBar: false
+                });
+
+                // Resize on window resize
+                window.addEventListener('resize', function() {
+                    Plotly.Plots.resize('plotly-chart-container');
+                });
+            } else {
+                setTimeout(renderChart, 100);
+            }
+        }
+
+        setTimeout(renderChart, 100);
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output('plotly-chart-container', 'data-dummy'),
+    Input('plotly-chart-container', 'id'),
+    prevent_initial_call=False
+)
+
 # Add CSS styling
 app.index_string = '''
 <!DOCTYPE html>
@@ -159,11 +204,22 @@ app.index_string = '''
                 box-sizing: border-box;
             }
 
+            html, body {
+                height: 100%;
+                width: 100%;
+                overflow: hidden;
+            }
+
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
                 line-height: 1.6;
                 color: #333;
                 background: #f5f5f5;
+            }
+
+            #react-entry-point, #react-entry-point > div {
+                height: 100%;
+                width: 100%;
             }
 
             .container {
