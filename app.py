@@ -44,9 +44,13 @@ def load_charts_from_json():
             else:
                 chart_title = json_file.stem.replace('-', ' ').title()
 
+            # Use relative path from json/ directory as unique ID
+            relative_path = json_file.relative_to(json_dir)
+            chart_id = str(relative_path.with_suffix('')).replace(os.sep, '/')
+
             # Store chart info with raw data (Plotly.js 1.58.5 handles it)
             charts.append({
-                'id': json_file.stem,
+                'id': chart_id,
                 'title': chart_title,
                 'path': str(json_file),
                 'data': chart_data.get('data', []),
@@ -115,9 +119,13 @@ def create_chart_page(chart_id):
     # Embed chart data as a data attribute for clientside rendering
     chart_data_json = json.dumps({'data': chart['data'], 'layout': chart['layout']})
 
+    # Use unique container ID per chart
+    container_id = f'chart-{chart_id}'
+
     return html.Div([
         html.Div(
-            id='plotly-chart-container',
+            id=container_id,
+            className='plotly-chart-container',
             **{'data-chart': chart_data_json},
             style={'height': '100%', 'width': '100%'}
         )
@@ -143,48 +151,64 @@ def display_page(pathname):
 # Clientside callback to render charts with Plotly.js 1.58.5
 app.clientside_callback(
     """
-    function(id) {
-        var container = document.getElementById('plotly-chart-container');
-        if (!container) {
-            return window.dash_clientside.no_update;
-        }
+    function(pathname) {
+        // Wait for DOM to be ready
+        setTimeout(function() {
+            // Get all divs and find one with data-chart attribute
+            var allDivs = document.getElementsByTagName('div');
+            var container = null;
 
-        var chartDataStr = container.getAttribute('data-chart');
-        if (!chartDataStr) {
-            return window.dash_clientside.no_update;
-        }
-
-        function renderChart() {
-            if (typeof Plotly !== 'undefined') {
-                var chartData = JSON.parse(chartDataStr);
-                var layout = chartData.layout || {};
-
-                // Force full viewport sizing
-                layout.autosize = true;
-                layout.width = undefined;
-                layout.height = undefined;
-                layout.margin = {l: 40, r: 40, t: 40, b: 40};
-
-                Plotly.newPlot('plotly-chart-container', chartData.data, layout, {
-                    responsive: true,
-                    displayModeBar: false
-                });
-
-                // Resize on window resize
-                window.addEventListener('resize', function() {
-                    Plotly.Plots.resize('plotly-chart-container');
-                });
-            } else {
-                setTimeout(renderChart, 100);
+            for (var i = 0; i < allDivs.length; i++) {
+                if (allDivs[i].hasAttribute('data-chart')) {
+                    container = allDivs[i];
+                    break;
+                }
             }
-        }
 
-        setTimeout(renderChart, 100);
+            if (!container) {
+                return;
+            }
+
+            var containerId = container.id;
+            var chartDataStr = container.getAttribute('data-chart');
+
+            if (!chartDataStr) {
+                return;
+            }
+
+            function renderChart() {
+                if (typeof Plotly !== 'undefined') {
+                    var chartData = JSON.parse(chartDataStr);
+                    var layout = chartData.layout || {};
+
+                    // Force full viewport sizing
+                    layout.autosize = true;
+                    layout.width = undefined;
+                    layout.height = undefined;
+                    layout.margin = {l: 40, r: 40, t: 40, b: 40};
+
+                    Plotly.newPlot(containerId, chartData.data, layout, {
+                        responsive: true,
+                        displayModeBar: false
+                    });
+
+                    // Resize on window resize
+                    window.addEventListener('resize', function() {
+                        Plotly.Plots.resize(containerId);
+                    });
+                } else {
+                    setTimeout(renderChart, 100);
+                }
+            }
+
+            renderChart();
+        }, 100);
+
         return window.dash_clientside.no_update;
     }
     """,
-    Output('plotly-chart-container', 'data-dummy'),
-    Input('plotly-chart-container', 'id'),
+    Output('page-content', 'data-dummy'),
+    Input('url', 'pathname'),
     prevent_initial_call=False
 )
 
@@ -219,7 +243,7 @@ app.index_string = '''
             }
 
             /* Only hide overflow for chart pages */
-            #plotly-chart-container {
+            .plotly-chart-container {
                 overflow: hidden;
             }
 
